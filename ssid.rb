@@ -63,10 +63,15 @@ class WisprLogin
     def check_local_ip
         case RUBY_PLATFORM
         when /darwin/i
-            unless `ifconfig en0  | grep -e "inet " | grep -v 169 `.strip.size>0 then
-                sleep 0.5
-            end
-
+            10.times{
+                unless ip = `( ipconfig getifaddr en0 || ipconfig getifaddr en3)   | grep -v 169 `.strip.size>0 then 
+                    Thread.pass
+                    sleep 0.5 
+                else 
+                    return ip 
+                end
+            }
+            #raise "No IP address obtained."
         end
     end
 
