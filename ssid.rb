@@ -54,7 +54,9 @@ class WisprLogin
         when /turllys/i
             turllys_login()
         when /wifihhdept/
-            login( *@passwords["wifihhdept"] )
+            login( *@@passwords["wifihhdept"] )
+        when /docomo/i
+            login( *@@passwords[/docomo/]  )
         end
 
 
