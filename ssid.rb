@@ -30,10 +30,8 @@ class WisprLogin
 
     def start_wispr
         ssid = self.current_ssid
-        self.chech_local_ip
+        self.check_local_ip
         ret = self.check_captive_network
-
-
 
         case ssid
 
@@ -62,7 +60,7 @@ class WisprLogin
 
     end
 
-    def chech_local_ip
+    def check_local_ip
         case RUBY_PLATFORM
         when /darwin/i
             unless `ifconfig en0  | grep -e "inet " | grep -v 169 `.strip.size>0 then
