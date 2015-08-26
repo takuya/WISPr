@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+require 'nokogiri'
+require 'pp'
+
+
+src = File.expand_path("./wispr_launch_agent.xml", File.dirname( __FILE__)  )
+xml = open(src).read
+doc = Nokogiri::XML(xml)
+name = doc.search("//dict/key[contains(.,'Label')]/following-sibling::*[1]/text()")
+dst = File.realpath(File.expand_path("~/Library/LaunchAgents/#{name}.plist"))
+
+
+# copy
+open(dst,"w"){|f| f.write xml }
+
+# reload
+Dir.chdir(File.dirname(dst)){|dir|
+    `launchctl unload #{name}.plist`
+    `launchctl load #{name}.plist`
+}
+
+
