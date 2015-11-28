@@ -153,23 +153,39 @@ class WisprLogin
     def reset_to_dhcp
         #`/usr/sbin/networksetup -setdhcp Wi-Fi`
     end
-    def login_7spot(user,pass)
+    def login_7spot(user,pass,omini7=false)
+      # 7 Soot はWiSPrも、CaptiveNetworkも無視してくる
+        m.user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36"
+        ## リダイレクト画面でCookieを貰う。
+        ##    JSチェックが　cookiecheck=true になるので代替
+        m.get "http://redir.7spot.jp/redir/"
+        host = m.page.uri.host
+        cookie = Mechanize::Cookie.new(
+                  'cookiecheck', host, {
+                      :value=>"true",
+                      :domain=>host,
+                      :path=>"/",
+                      :expires=>Time.now+60*60*24
+                })
+        m.cookie_jar.add(host.cookie)
+        ## タイムスタンプでチェックしてるのでCookieを付けて送信
+        m.get "http://webapp-ap.7spot.jp/?tmst="+(Time.now()/1000).to_i
+        ## 再びCookieが消される可能性があるので対応
+        m.cookie_jar.add(host.cookie)
 
-        return unless self.check_captive_network
-        ##専用ログインURL
-        m.get("http://webapp-ap.7spot.jp/banners/click/4395?tmst=1437268072")
+        ## ログイン画面を探す
+        m.get("http://webapp-ap.7spot.jp/banners/click/4395")
 
+        ## オムニ７会員の設定が追加されたので対応
+        f = m.page.search("input[value^='7SPOT']") unless omini7
+        f = m.page.search("input[value^='オムニ']") if omini7
+        f.click()
+        ## 再びCookieが消される可能性があるので対応
+        m.cookie_jar.add(host.cookie)
 
-        forms =  m.page.forms.select{|e| e.fields_with(:type=>"password").size == 1 and ( e.fields_with(:type=> "text" ).size > 0  or e.fields_with(:type=> "text" ).size > 0 ) }
-        raise "ログインフォーム見つからない" unless forms.size > 0
+        ## ログイン実行する。
+        self.login(user,pass)
 
-        form = forms.first
-        form.field_with( :type=>"password").value = pass
-        form.fields_with( :type=>"text").first.value = user
-        p form
-        form.submit
-
-        m.page.body
     end
     def auWifi_login(id,pw)
 
