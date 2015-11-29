@@ -31,7 +31,8 @@ class WisprLogin
     def start_wispr
         ssid = self.current_ssid
         self.check_local_ip
-        ret = self.check_captive_network
+        # ret = self.check_captive_network
+        # puts  ssid
 
         case ssid
 
