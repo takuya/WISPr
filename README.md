@@ -21,11 +21,24 @@ gem install mechanize
 
 ```
 cp ssid_agent.xml ~/Library/LaunchAgents/biz.takuya.wispr.plist
-cd ~/Library/LaunchAgents/biz.takuya.wispr.plist
+cd ~/Library/LaunchAgents/
 launchctl load biz.takuya.wispr.plist
 ```
 
 xmlを ~/Library/LaunchAgentsにコピー、ファイル名は任意です。 
+
+## 起動状態の確認
+
+```
+$launchctl list | grep wispr
+> 50:-  78  biz.takuya.wispr
+```
+
+## 再起動
+```
+$ launchctl start biz.takuya.wispr.plist
+$ launchctl stop biz.takuya.wispr.plist
+```
 
 ## 自動機能のログイン機能
 
