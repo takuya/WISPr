@@ -189,6 +189,7 @@ class WisprLogin
         m.cookie_jar.add(cookie)
 
         ## ログイン実行する。
+        self.login(user,pass,force=true)
         ## 7spot はCaptiveNetworkの仕様ガン無視して、セブンに都合のいいfilteringをしているので注意
         ## ログイン後に「利用規約の同意」が必要だった。
         m.get "/internet" 
