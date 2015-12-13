@@ -7,6 +7,7 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 I_KNOW_THAT_OPENSSL_VERIFY_PEER_EQUALS_VERIFY_NONE_IS_WRONG=true
 
 require 'mechanize'
+# require 'pry'
 
 
 
@@ -97,9 +98,10 @@ class WisprLogin
       puts "au Wifiツール殺す"
          `pkill  au\\ Wi-Fi ` if `pgrep au\\ Wi-Fi`
     end
-    def login( user, pass)
+    def login( user, pass,force=false)
 
-        return unless self.check_captive_network
+
+        return unless force ||  self.check_captive_network
 
 
         forms =  m.page.forms.select{|e| e.fields_with(:type=>"password").size == 1 and ( e.fields_with(:type=> "text" ).size > 0  or e.fields_with(:type=> nil ).size > 0 ) }
@@ -168,11 +170,11 @@ class WisprLogin
                       :path=>"/",
                       :expires=>Time.now+60*60*24
                 })
-        m.cookie_jar.add(host.cookie)
+        m.cookie_jar.add(cookie)
         ## タイムスタンプでチェックしてるのでCookieを付けて送信
-        m.get "http://webapp-ap.7spot.jp/?tmst="+(Time.now()/1000).to_i
+        m.get "http://webapp-ap.7spot.jp/?tmst="+(Time.now().to_i/1000).to_s
         ## 再びCookieが消される可能性があるので対応
-        m.cookie_jar.add(host.cookie)
+        m.cookie_jar.add(cookie)
 
         ## ログイン画面を探す
         m.get("http://webapp-ap.7spot.jp/banners/click/4395")
@@ -180,12 +182,29 @@ class WisprLogin
         ## オムニ７会員の設定が追加されたので対応
         f = m.page.search("input[value^='7SPOT']") unless omini7
         f = m.page.search("input[value^='オムニ']") if omini7
-        f.click()
+        match = f.attr("onclick").value.match(/location.href='(.+)'/)
+        href = match[1]
+        m.get href
         ## 再びCookieが消される可能性があるので対応
-        m.cookie_jar.add(host.cookie)
+        m.cookie_jar.add(cookie)
 
         ## ログイン実行する。
-        self.login(user,pass)
+        ## 7spot はCaptiveNetworkの仕様ガン無視して、セブンに都合のいいfilteringをしているので注意
+        ## ログイン後に「利用規約の同意」が必要だった。
+        m.get "/internet" 
+        if m.page.body.to_s.toutf8 =~ /利用規約に同意し/
+          m.get "/internet/auth/?p" + Time.now.to_s
+          keys = m.page.body
+          keys = JSON.load(keys)
+          m.history.pop
+          f = m.page.forms[0]
+          f.field_with(:name=>/user/).value =  keys["login_identity"]
+          f.field_with(:name=>/pass/).value =  keys["password"]
+          f.submit
+        end
+
+        print m.page.body
+        
 
     end
     def auWifi_login(id,pw)
