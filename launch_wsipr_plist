@@ -3,7 +3,7 @@ require 'nokogiri'
 require 'pp'
 
 
-src = File.expand_path("./wispr_launch_agent.xml", File.dirname( __FILE__)  )
+src = File.expand_path("wispr_launch_agent.xml", File.dirname( File.realpath(__FILE__))  )
 xml = open(src).read
 doc = Nokogiri::XML(xml)
 name = doc.search("//dict/key[contains(.,'Label')]/following-sibling::*[1]/text()")
@@ -17,6 +17,7 @@ open(dst,"w"){|f| f.write xml }
 Dir.chdir(File.dirname(dst)){|dir|
     `launchctl unload #{name}.plist`
     `launchctl load #{name}.plist`
+    `launchctl start  biz.takuya.wispr`
 }
 
 
