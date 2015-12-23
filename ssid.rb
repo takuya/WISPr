@@ -7,11 +7,24 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 I_KNOW_THAT_OPENSSL_VERIFY_PEER_EQUALS_VERIFY_NONE_IS_WRONG=true
 
 require 'mechanize'
-# require 'pry'
+require 'pry'
 
 
 
 class WisprLogin
+    class ::Hash
+      alias_method :original_get_value , :[]
+      def [](*args)
+        if args[0].class == ::Regexp then
+          found = self.find{|k,v| k=~ args[0] }
+          key = found[0]
+          self.original_get_value(key)
+        else
+          self.original_get_value(*args)
+        end
+      end
+
+    end
     attr_accessor :m
     def initialize(passwords)
         @m = Mechanize.new
@@ -45,16 +58,15 @@ class WisprLogin
         when /starbucks/i
             starbucks_login( *@@passwords["starbucks"]  )
         when /au/i
-            #`open -a "au Wi-Fi接続ツール"`
             auWifi_login( *@@passwords["au"]  )
         when /wi2/i
-            login( *@@passwords["wi2"]  )
+            wi2_login( *@@passwords[/wi2/]  )
         when /7spot/i
-            login_7spot( *@@passwords["7spot"]  )
+            login_7spot( *@@passwords[/7spot/]  )
         when /turllys/i
             turllys_login()
         when /wifihhdept/
-            login( *@@passwords["wifihhdept"] )
+            login( *@@passwords[/wifihhdept/] )
         when /docomo/i
             login( *@@passwords[/docomo/]  )
         end
@@ -102,7 +114,6 @@ class WisprLogin
 
 
         return unless force ||  self.check_captive_network
-
 
         forms =  m.page.forms.select{|e| e.fields_with(:type=>"password").size == 1 and ( e.fields_with(:type=> "text" ).size > 0  or e.fields_with(:type=> nil ).size > 0 ) }
 
@@ -285,7 +296,6 @@ if __FILE__ == $0 then
 
     require 'pp'
 
-    $: <<  File.dirname(File.realpath(__FILE__))+ "/lib"
     require 'auth_keys'
 
     wispr = WisprLogin.new(AuthKeys.load)
