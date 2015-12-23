@@ -125,7 +125,7 @@ class WisprLogin
         f.field_with(:type=>/pass/i).value = pass
         f.submit
 
-        m.page.body
+        print m.page.body
 
     end
 
@@ -221,6 +221,7 @@ class WisprLogin
     end
     def auWifi_login(id,pw)
 
+        #`open -a "au Wi-Fi接続ツール"`
 
         return unless self.check_captive_network
 
