@@ -2,6 +2,7 @@
 #coding: utf-8
 #
 
+require 'pry'
 require 'openssl'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 I_KNOW_THAT_OPENSSL_VERIFY_PEER_EQUALS_VERIFY_NONE_IS_WRONG=true
@@ -188,7 +189,8 @@ class WisprLogin
         m.cookie_jar.add(cookie)
 
         ## ログイン画面を探す
-        m.get("http://webapp-ap.7spot.jp/banners/click/4395")
+        a = m.page.search("//a[@href][.//img[@src='http://core.7spot.jp/imgs/7/k46e3.png']] ")[0]
+        m.get a.attr("href")
 
         ## オムニ７会員の設定が追加されたので対応
         f = m.page.search("input[value^='7SPOT']") unless omini7
