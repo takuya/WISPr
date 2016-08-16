@@ -55,6 +55,8 @@ class WisprLogin
 
         when /mobilepoint/i
             mobilepoint_login( *@@passwords["mobilepoint"]  )
+        when /mos/i
+            login( *@@passwords["mos-wifi"]  )
         when /starbucks/i
             starbucks_login( *@@passwords["starbucks"]  )
         when /au/i
