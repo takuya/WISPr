@@ -30,6 +30,15 @@ class WisprLogin
         @m = Mechanize.new
         @@passwords = passwords
     end
+    def chech_captive_app_exists()
+      begin
+      if File.exists?('/System/Library/CoreServices/Captive Network Assistant.app') then 
+         File.unlink('/System/Library/CoreServices/Captive Network Assistant.app')
+      end
+      rescue => e 
+        raise 'CaptiveNetwork.appがあるので動作できない- SIP ( SYstem Integrity Protection ) をオフにして CaptiveNetwork.app を削除（別名にする）などを先にすること'
+      end
+    end
 
     def current_ssid
       case RUBY_PLATFORM
