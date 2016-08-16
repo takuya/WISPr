@@ -53,15 +53,16 @@ class WisprLogin
 
     def start_wispr
         ssid = self.current_ssid
-        self.check_local_ip
+        p ssid
+        p self.check_local_ip
         # ret = self.check_captive_network
         # puts  ssid
+        #
 
         case ssid
 
         when /softbank/i
             softbank_login( *@@passwords["softbank"]  )
-
         when /mobilepoint/i
             mobilepoint_login( *@@passwords["mobilepoint"]  )
         when /mos/i
@@ -96,7 +97,7 @@ class WisprLogin
                     return ip 
                 end
             }
-            #raise "No IP address obtained."
+            raise "No IP address obtained."
         end
     end
 
@@ -108,8 +109,9 @@ class WisprLogin
             sleep 1 # waitting DNS
             cnt = cnt + 1 
             retry if cnt < 10
+            raise "captive チェック 接続不可だった"  unless m.page
         end
-        return m.page.search("//body/text()").text != "Success"
+        m.page.search("//body/text()").text != "Success"
     end
 
     def start_au_wifi_tool
@@ -136,7 +138,7 @@ class WisprLogin
         f.field_with(:type=>/pass/i).value = pass
         f.submit
 
-        print m.page.body
+        m.page.body
 
     end
 
@@ -285,10 +287,10 @@ class WisprLogin
         f.field_with(:name=>/SWSPassword/).value=pw
         btn = f.button_with(:type=>/submit/i)
 
-
-
         m.submit(f,btn)
-        #print m.page.body.toutf8
+
+
+        raise "ソフトバンクログイン失敗" if m.page.body =~/失敗/
 
     end
 
