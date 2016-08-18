@@ -68,7 +68,7 @@ class WisprLogin
         when /mobilepoint/i
             mobilepoint_login( *@@passwords["mobilepoint"]  )
         when /mos/i
-            login( *@@passwords["mos-wifi"]  )
+            mos_login( *@@passwords["mos-wifi"]  )
         when /starbucks/i
             starbucks_login( *@@passwords["starbucks"]  )
         when /au/i
@@ -139,6 +139,32 @@ class WisprLogin
       f = m.page.form_with :action => /mail/
       f.field_with( :name => /mail/i).value = 'tekitou@gmail.com'
       f.submit 
+
+
+
+    end
+    def mos_login( user, pass,force=false)
+
+        return unless force ||  self.check_captive_network
+
+        forms =  m.page.forms.select{|e| e.fields_with(:type=>"password").size == 1 and ( e.fields_with(:type=> "text" ).size > 0  or e.fields_with(:type=> nil ).size > 0 ) }
+
+
+        raise "ログインフォーム見つからない" unless forms.size > 0
+
+        f = m.page.forms[0]
+        f.field_with(:type=>/tex/i).value = user
+        f.field_with(:type=>/pass/i).value = pass
+        f.submit
+
+        ## JS でリダイレクト処理１
+        f = m.page.forms[0]
+        f.submit
+        ## JS でリダイレクト処理２
+        f = m.page.forms[0]
+        f.action = (URI.join(m.page.uri , 'reus-login!checkLogin.action')).to_s
+        f.encoding = 'UTF-8' ## bad hack for avoiding mechanize bug
+        f.submit
 
 
 
