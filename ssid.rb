@@ -28,6 +28,8 @@ class WisprLogin
     attr_accessor :m
     def initialize(passwords)
         @m = Mechanize.new
+        ## UA 制限 が多いのでiOSのフリヲスル
+        @m.user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.3 (KHTML, like Gecko) Version/8.0 Mobile/12A4345d Safari/600.1.4"
         @@passwords = passwords
     end
     def chech_captive_app_exists()
@@ -81,6 +83,8 @@ class WisprLogin
             login( *@@passwords[/wifihhdept/] )
         when /docomo/i
             login( *@@passwords[/docomo/]  )
+        when /MCD-FREE-WIFI/i
+            mcd_login()
         end
 
 
@@ -122,6 +126,22 @@ class WisprLogin
       # puts `pgrep au\ Wifi`
       puts "au Wifiツール殺す"
          `pkill  au\\ Wi-Fi ` if `pgrep au\\ Wi-Fi`
+    end
+    def mcd_login(user=nil, pass=nil)
+      # マクドのWifiは適当なメアドでログインできた。
+      # この仕様はいつまで継続するかわからないので注意が必要
+      ## 'http://mcd.intplus-freewifi.com/mcd/oauth/contract.html?lang=jp' へリダイレクトさ
+      #  れるときにJSPSessionIDが発行されるのでそれを使わないとログインできない
+      m.get 'http://google.com'
+      f = m.page.forms[0]
+      f.submit 
+      ## oauth できるが、メールのみがカンタンだった。
+      f = m.page.form_with :action => /mail/
+      f.field_with( :name => /mail/i).value = 'tekitou@gmail.com'
+      f.submit 
+
+
+
     end
     def login( user, pass,force=false)
 
