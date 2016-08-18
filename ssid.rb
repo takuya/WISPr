@@ -64,7 +64,7 @@ class WisprLogin
         when /softbank/i
             softbank_login( *@@passwords["softbank"]  )
         when /mobilepoint/i
-            mobilepoint_login( *@@passwords["mobilepoint"]  )
+            mobilepoint_login( *@@passwords[/docomo/]  )
         when /mos/i
             mos_login( *@@passwords["mos-wifi"]  )
         when /starbucks/i
